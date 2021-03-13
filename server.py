@@ -134,7 +134,7 @@ while inputs:
             outputs.remove(s)
         removeclient(s)
     
-    #If there are no more connections, the server terminates
+    #If all connections is closed, the server terminates
     if (len(inputs) == 1 and len(outputs) == 0):
         print('Server shutting down in 3 seconds..')
         time.sleep(3)
