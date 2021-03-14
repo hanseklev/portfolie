@@ -6,26 +6,17 @@ import sys
 from user import Bot, User
 import threading
 
-
 args = utils.getCommandLineArguments(True)
+
 PORT = args[0]
-IP = '192.168.0.6' #args[1]
+IP =  '127.0.0.1' #192.168.0.25' 
 USERNAME = args[2]
 ishuman = args[3]
 
-MSGLEN = 1024
-
-def getuserinput():
-    return input(f"{colors.OKBLUE}{USERNAME}: "+colors.ENDC)
-
-
 if ishuman:
     user = User(USERNAME)
-    inputthread = threading.Thread(target=getuserinput).start()
-
 else: 
     user = Bot(USERNAME)
-
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -45,26 +36,22 @@ def formatname(msg):
     return str(f"{colors.FAIL}{arr[0]}: {colors.ENDC}{arr[1]}")
 
 def prettifymessage(name, msg):
-    if name == 'INFO' or name == 'HOST':
-        return f"{colors.WARNING}{name}{colors.ENDC}: {msg}\n"
+    if name == 'INFO':
+        return str(f"{colors.WARNING}{msg}"+colors.ENDC)
+    if name == 'HOST':
+        return f"{colors.WARNING}{name}{colors.ENDC}: {msg}"
 
-    return f"{colors.OKCYAN}{name}{colors.ENDC}: {msg}\n"
+    return f"{colors.OKCYAN}{name}{colors.ENDC}: {msg}"
 
 
 
-
-def closesession():
-    client.shutdown(socket.SHUT_RDWR)
-    client.close()
-    quit()
-
-recv_message = ''
 isrunning = True
 response = ''
 
 while isrunning:
     inputs = [sys.stdin ,client]
     read, write, _, = select.select(inputs, [], [], 5)
+    response_msg = ''
 
     for s in read:
         if s is client:
@@ -73,29 +60,29 @@ while isrunning:
                 isrunning = False
                 break
             else:
-                parsedmsg = utils.parsedata(data)
-                if len(parsedmsg) == 2:
-                    [name, msg] = parsedmsg
-                    if name == 'INFO':
-                        sys.stdout.write(f"{colors.WARNING}{msg}\n"+colors.ENDC)
+                parsed_msg = utils.parsedata(data)
+                if len(parsed_msg) == 2: 
+                    [name, msg] = parsed_msg
+                    if name == 'HOST':             #Bots only responds to the hosts actions by default
+                        response_msg = msg
+                        print(prettifymessage(name, msg))
                     else:
-                        recv_message = msg
-                        sys.stdout.write(prettifymessage(name, msg))
+                        print(prettifymessage(name, msg))
                 else:
-                    recv_message = parsedmsg[0]
-                    sys.stdout.write(parsedmsg[0])
-                sys.stdout.flush()
+                    print('weir')
+                    print(parsed_msg[0])
 
-        #checks if the user is typing something, 
         if ishuman:
             if select.select([sys.stdin,],[],[],0.0)[0]:
                 response = sys.stdin.readline().strip()
-                #sys.stdin.flush()
+            else:                               # If there is no input the program jumps to the top and checks for input
+                continue                        # this way the user is not blocking incoming messages while typing
+        else:
+            if response_msg != '':
+                response = user.respond(response_msg)
+                print(prettifymessage(USERNAME, response))
             else:
                 continue
-        if not ishuman and recv_message != '':
-            response = user.respond(recv_message)
-            print(prettifymessage(USERNAME, response))
 
         if response == 'bye':
             client.send(response.encode()) 

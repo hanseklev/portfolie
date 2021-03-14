@@ -17,7 +17,7 @@ server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 server.setblocking(0)
 server.bind((IP, PORT))
 server.listen()
-print(f"{colors.OKGREEN}Server is running on port {PORT}" + colors.ENDC)
+print(f"{colors.OKGREEN}Server is running on port {PORT}\nIP: {IP}" + colors.ENDC)
 
 inputs = [server]
 outputs = []
@@ -40,7 +40,7 @@ def sendtoothers(conn, msg):
                 print('Something went wrong..', e)        
 
 def broadcast(msg, isinfo = False):
-    msg_type = 'INFO' if isinfo else 'HOST' #Inform the client if it's a request or info from the host
+    msg_type = 'INFO' if isinfo else 'HOST' #Inform the client if it's a message or info from the host
     for c in inputs:
         if c is not server:
             c.send(utils.addnametodata(msg_type, msg))
@@ -65,12 +65,18 @@ def removeclient(conn):
 
 
 
+def broadcast_suggestion():
+    broadcast(gethostaction())
+
+
+
 def gethostaction():
     return random.choice(HOST_ACTIONS)
 
 
+# Loop that handles the inital connection, don't register messages sendt, just connections.
+# Moves on to the main lopp when the minimum connection requirement is set
 print('Waiting for more users..')
-
 while len(inputs) < 3:
     readable, writable, exceptional = select.select(inputs, outputs, inputs, 5)
     
@@ -80,24 +86,32 @@ while len(inputs) < 3:
             client.setblocking(0)
             name = client.recv(1024).decode()
             addclient(client, name)
-"""
-print(f"{colors.WARNING}Let the chatting begin :-)"+colors.ENDC)
-msg_queues[server].put(utils.addnametodata("INFO", "Let the chatting begin:)"))
-if server not in outputs:
-    outputs.append(server)
-"""
+        else:
+            data = s.recv(1024)
+            if not data:
+                if s in outputs:
+                    outputs.remove(s)
+                removeclient(s)
 
 print(f"{colors.WARNING}Let the chatting begin :-)"+colors.ENDC)
-
-def add_host_suggestion():
-    if server not in outputs:
-        outputs.append(server)
-        msg_queues[server].put(utils.addnametodata('HOST', gethostaction()))
+broadcast_suggestion()
 
 
+clients_is_ready = True
+start_time = time.perf_counter()
+start2 = time.perf_counter()
+end_time = 0
 
 while inputs:
     readable, writable, exceptional = select.select(inputs, outputs, inputs)
+
+    end_time = time.perf_counter()
+    elapsed_time = end_time - start_time
+
+    if (elapsed_time > 10):
+        print(f"time: {'{0:.2f}'.format(elapsed_time)} s")
+        print('It took some time, lets move on')
+        broadcast_suggestion()  
 
     for s in readable:
         if s is server:
@@ -117,7 +131,6 @@ while inputs:
                 if s not in outputs:
                     outputs.append(s)
 
-
     for s in writable:
         if (len(outputs) == 0):
             break
@@ -128,7 +141,6 @@ while inputs:
         else:
             sendtoothers(s, next_msg)
     
-    #msg_queues[server].put(random.choice(HOST_ACTIONS).encode())
     for s in exceptional:
         if s in outputs:
             outputs.remove(s)

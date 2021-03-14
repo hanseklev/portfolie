@@ -57,7 +57,7 @@ def deleteclient(conn, clients):
 
 DELIMITER = '#$%'
 
-def addnametodata(name ,msg):
+def addnametodata(name, msg):
     try:
         msg = msg.decode()
     except (UnicodeDecodeError, AttributeError):
