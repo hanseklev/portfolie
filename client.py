@@ -3,18 +3,23 @@ import utils
 from printcolors import colors
 import select 
 import sys
-from user import Bot, User
+from user import Bot, User, Chuck, Cathy
 import threading
 
 args = utils.getCommandLineArguments(True)
 
 PORT = args[0]
-IP =  '127.0.0.1' #192.168.0.25' 
+IP =  '127.0.0.1' #127.0.0.1' #127.0.0.1' #
 USERNAME = args[2]
 ishuman = args[3]
+free_for_all = True
 
 if ishuman:
     user = User(USERNAME)
+elif USERNAME == 'Chuck':
+    user = Chuck(USERNAME)
+elif USERNAME == 'Cathy':
+    user = Cathy(USERNAME)
 else: 
     user = Bot(USERNAME)
 
@@ -67,10 +72,13 @@ while isrunning:
                         response_msg = msg
                         print(prettifymessage(name, msg))
                     else:
+                        if free_for_all and name != 'INFO':
+                            response_msg = msg
                         print(prettifymessage(name, msg))
                 else:
-                    print('weir')
-                    print(parsed_msg[0])
+                    pass
+                    #print('weir')
+                    #print(parsed_msg[0])
 
         if ishuman:
             if select.select([sys.stdin,],[],[],0.0)[0]:

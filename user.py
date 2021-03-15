@@ -3,6 +3,7 @@ import re
 from datetime import datetime, time
 import time
 from printcolors import colors
+import api
 
 class Client:
     def __init__(self, name):
@@ -34,6 +35,7 @@ class Bot (Client):
             return f'Welcome to our midst {connectedbotname}'
         elif inputtype == 'QUESTION':
             return 'Not sure'
+
         elif inputtype == 'TIME':
             return str(f"The thime is {datetime.now().time()}")
         elif inputtype == 'WILDCARD':
@@ -49,6 +51,8 @@ class Bot (Client):
     def analyzeinput(self, input):
         if input.find("joined the room") != -1:
             return 'NEW CONN'
+        elif input.find("on your mind") != -1:
+            return 'RANDOM'
         elif input.find("?") != -1: #if input is a question
             if re.search('time', input, re.IGNORECASE): 
                 return 'TIME'
@@ -64,3 +68,58 @@ class User(Client):
 
     def respond(self, inputmsg):
         return input(f"{colors.OKBLUE}{self.name}: "+colors.ENDC)
+
+
+class Chuck(Bot):
+    def __init__(self, name):
+        Bot.__init__(self, name)
+    
+    def respond(self, input):
+        self.count += 1
+        if self.count > 4:
+            return 'bye'
+
+        if not input:
+            return ''
+        inputtype = self.analyzeinput(input)
+        time.sleep(random.randint(2, 6))
+
+        if inputtype =='NEW CONN':
+            connectedbotname = input.split()[0]
+            return f'Welcome to our midst {connectedbotname}'
+        elif inputtype == 'QUESTION':
+            return 'Not sure'
+
+        elif inputtype == 'TIME':
+            return str(f"The thime is {datetime.now().time()}")
+        elif inputtype == 'WILDCARD':
+            return f"I dont know about that.. but {api.get_chuck_norris_joke()}"
+        if inputtype == 'CONNECTION':
+            return 'Welcome'  
+
+class Cathy(Bot):
+    def __init__(self, name):
+        Bot.__init__(self, name)
+    
+    def respond(self, input):
+        self.count += 1
+        if self.count > 4:
+            return 'bye'
+
+        if not input:
+            return ''
+        inputtype = self.analyzeinput(input)
+        time.sleep(random.randint(2, 6))
+
+        if inputtype =='NEW CONN':
+            connectedbotname = input.split()[0]
+            return f'Welcome to our midst {connectedbotname}'
+        elif inputtype == 'QUESTION':
+            return 'Not sure'
+
+        elif inputtype == 'TIME':
+            return str(f"The thime is {datetime.now().time()}")
+        elif inputtype == 'WILDCARD':
+            return f"Did you actually knew that {api.get_cat_fact()}"
+        if inputtype == 'CONNECTION':
+            return 'Welcome'  

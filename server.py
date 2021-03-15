@@ -23,7 +23,7 @@ inputs = [server]
 outputs = []
 msg_queues = {}
 clientnames = []
-HOST_ACTIONS = ['What should we talk about?', 'How are y\'all doing?', 'What are you thinking about today?']
+HOST_ACTIONS = ['What should we talk about today?', 'How are y\'all doing?', 'What are you thinking about today?', 'Tell something funny.']
 
 
 def sendtoothers(conn, msg):
@@ -110,8 +110,8 @@ while inputs:
 
     if (elapsed_time > 10):
         print(f"time: {'{0:.2f}'.format(elapsed_time)} s")
-        print('It took some time, lets move on')
-        broadcast_suggestion()  
+        print('outputs: ', len(outputs))
+        #broadcast_suggestion()  
 
     for s in readable:
         if s is server:
@@ -123,6 +123,7 @@ while inputs:
         else:
             data = s.recv(1024)
             if not data:
+                print('stille recv')
                 if s in outputs:
                     outputs.remove(s)
                 removeclient(s)
@@ -145,7 +146,9 @@ while inputs:
         if s in outputs:
             outputs.remove(s)
         removeclient(s)
-    
+    if len(outputs) == 0:
+        print('stille i fjøs send ny')
+    start_time = time.perf_counter()
     #If all connections is closed, the server terminates
     if (len(inputs) == 1 and len(outputs) == 0):
         print('Server shutting down in 3 seconds..')
