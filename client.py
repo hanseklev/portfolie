@@ -5,11 +5,12 @@ import select
 import sys
 from user import Bot, User, Chuck, Cathy
 import threading
+import time, random
 
 args = utils.getCommandLineArguments(True)
 
 PORT = args[0]
-IP =  '127.0.0.1' #127.0.0.1' #127.0.0.1' #
+IP =  '127.0.0.1' #'192.168.0.25' #127.0.0.1' #127.0.0.1' #
 USERNAME = args[2]
 ishuman = args[3]
 free_for_all = True
@@ -87,7 +88,10 @@ while isrunning:
                 continue                        # this way the user is not blocking incoming messages while typing
         else:
             if response_msg != '':
+                time.sleep(random.randint(3, 6))
                 response = user.respond(response_msg)
+                if response == '':
+                    continue
                 print(prettifymessage(USERNAME, response))
             else:
                 continue

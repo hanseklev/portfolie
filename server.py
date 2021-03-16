@@ -23,7 +23,7 @@ inputs = [server]
 outputs = []
 msg_queues = {}
 clientnames = []
-HOST_ACTIONS = ['What should we talk about today?', 'How are y\'all doing?', 'What are you thinking about today?', 'Tell something funny.']
+HOST_ACTIONS = ['What should we talk about today?', 'How are you all doing?', 'What are you thinking about today?', 'Tell something funny.']
 
 
 def sendtoothers(conn, msg):

@@ -10,7 +10,10 @@
 
 
 ### BOT:
+Things to ask about and get a decent answer:
+- The weather
 - 
+
 
 
 ## Known issues
