@@ -1,34 +1,25 @@
 import socket
 import utils
-from printcolors import colors
+from utils import colors
 import select 
 import sys
-from user import Bot, User, Chuck, Cathy
-import threading
+from User import Bot, User
 import time, random
 
 args = utils.getCommandLineArguments(True)
+client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-PORT = args[0]
-IP =  '127.0.0.1' #'192.168.0.25' #127.0.0.1' #127.0.0.1' #
-USERNAME = args[2]
-ishuman = args[3]
-free_for_all = True
+[ PORT, IP, USERNAME, ishuman, response_limit, free_for_all ] = args
 
 if ishuman:
     user = User(USERNAME)
-elif USERNAME == 'Chuck':
-    user = Chuck(USERNAME)
-elif USERNAME == 'Cathy':
-    user = Cathy(USERNAME)
 else: 
     user = Bot(USERNAME)
-
-client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    user.load('bot-data.json')
 
 try:
     client.connect((IP, PORT))
-    client.setblocking(0)
+    client.setblocking(False)
     client.send(user.getname().encode())
 except socket.error as e:
     print(f'{colors.FAIL}Unable to connect..either the server is not running, or you have wrong port/IP' + colors.ENDC)
@@ -41,32 +32,48 @@ def formatname(msg):
     arr = text.split(":", 2)
     return str(f"{colors.FAIL}{arr[0]}: {colors.ENDC}{arr[1]}")
 
+def parsedata(msg):
+    decoded_msg = msg
+    try:
+        decoded_msg = msg.decode()
+    except (UnicodeDecodeError, AttributeError):
+        pass
+
+    return str(decoded_msg).split(utils.DELIMITER)
+
+
 def prettifymessage(name, msg):
     if name == 'INFO':
         return str(f"{colors.WARNING}{msg}"+colors.ENDC)
     if name == 'HOST':
         return f"{colors.WARNING}{name}{colors.ENDC}: {msg}"
-
-    return f"{colors.OKCYAN}{name}{colors.ENDC}: {msg}"
-
+    if name == USERNAME:
+        return f"{colors.BLUE}You{colors.ENDC}: {msg}"
+    else:
+        return f"{colors.CYAN}{name}{colors.ENDC}: {msg}"
 
 
 isrunning = True
 response = ''
 
 while isrunning:
-    inputs = [sys.stdin ,client]
-    read, write, _, = select.select(inputs, [], [], 5)
+    inputs = [sys.stdin, client]
+    read, write, _, = select.select(inputs, [], [], 10)
     response_msg = ''
 
     for s in read:
         if s is client:
-            data = s.recv(1024)
+            try:
+                data = s.recv(1024)
+            except ConnectionResetError:
+                print(colors.FAIL+"Something bad happen, try to reconnect"+colors.ENDC)
+                isrunning = False
+                break
             if not data:
                 isrunning = False
                 break
             else:
-                parsed_msg = utils.parsedata(data)
+                parsed_msg = parsedata(data)
                 if len(parsed_msg) == 2: 
                     [name, msg] = parsed_msg
                     if name == 'HOST':             #Bots only responds to the hosts actions by default
@@ -76,10 +83,6 @@ while isrunning:
                         if free_for_all and name != 'INFO':
                             response_msg = msg
                         print(prettifymessage(name, msg))
-                else:
-                    pass
-                    #print('weir')
-                    #print(parsed_msg[0])
 
         if ishuman:
             if select.select([sys.stdin,],[],[],0.0)[0]:
@@ -88,7 +91,7 @@ while isrunning:
                 continue                        # this way the user is not blocking incoming messages while typing
         else:
             if response_msg != '':
-                time.sleep(random.randint(3, 6))
+                time.sleep(random.randint(200, 350)/100)  # Add some delay to the bot response to prevent mayhem
                 response = user.respond(response_msg)
                 if response == '':
                     continue
@@ -102,6 +105,7 @@ while isrunning:
         else:
             client.send(response.encode()) 
 
+client.recv(1024)
 client.close()
 print('Closing app..')
 quit() 

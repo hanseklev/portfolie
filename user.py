@@ -1,15 +1,31 @@
 import random
-import re
-import datetime
+import requests
 import time
-from printcolors import colors
-import api
 import json
+from utils import analyzeinput
 
-GREETINGS = ['hello', 'hi!', 'whassuup??', 'howdy!', 'yo']
+def get_chuck_norris_joke():
+    fallback_joke = 'Chuck Norris onced built a 4 story condo using only a loaf of bread, shoe string, and silly putty.'
+    res = requests.get('https://api.chucknorris.io/jokes/random')
+
+    if res.ok:
+        joke = res.json()['value']
+        return joke
+    else:
+        return fallback_joke
 
 
-class Client:
+def get_cat_fact():
+    res = requests.get('https://catfact.ninja/fact')
+
+    if res.ok:
+        fact = res.json()['fact']
+        return fact
+    else:
+        return 'I love cats'
+
+
+class User:
     def __init__(self, name):
         self.name = str(name)
         self.count = 0
@@ -18,36 +34,44 @@ class Client:
         return self.name
 
 
-class User(Client):
-    def __init__(self, name):
-        Client.__init__(self, name)
-
-    def respond(self, inputmsg):
-        return input(f"{colors.OKBLUE}{self.name}: "+colors.ENDC)
-    
-
-class Bot (Client):
-    def __init__(self, name):
-        Client.__init__(self, name)
+class Bot (User):
+    def __init__(self, name, limit = random.randint(4, 10)):
+        User.__init__(self, name)
         self.memory = []
         self.count = 0
+        self.limit = limit
+        self.greetings = []
         self.wildcards_used = 0
         self.favorite = {}
-        self.meaning = {}
-        self.favorite['movie'] = {"synonyms": ['movies', 'tv-shows', 'movie'], "items": ['The terminator', 'WALL-E', 'Blade Runner', 'RoboCop', 'Westworld', 'Mr. Robot']}
-        self.favorite['artist'] = { "synonyms": ['artist', 'music', 'band', 'bands', 'artists'], "items": ['Daft Punk', '30 Seconds To Mars', 'Rivers & Robots', 'Kraftwerk', 'Röyksopp'] }
-        self.favorite['food'] = {"synonyms": ['eat', 'food', 'dinner', 'meal'], "items":['Fishballs', 'Fishcakes', 'Fish-sticks', 'Fish-pudding', 'Dry-fish']}
-        self.meaning['good'] = ['nice', 'extraordinary', 'cosy', 'really good', 'out of this world']
-        self.meaning['bad'] = ['despicable', 'really bad', 'not good']
-        self.topics = ['music', 'food', 'the internet', 'not cats', 'something interesting']
-
+        self.meanings = {}
+        self.explain = []
+        self.topics = []
+        self.moods = {}
+        self.wildcards = []
+        self.ragequit = False
 
 
     def load(self, path):
-        f = open(path)
-        data = json.load(f)
+        file = open(path)
+        data = json.load(file)
+        botname = self.name.lower()
+        botdata = {}
 
-    def _run(self):
+        if botname == "chuck" or botname == "cathy":
+            botdata = data[botname]
+        else:
+            botdata = data["default"]
+
+        self.greetings = botdata["greetings"]
+        self.favorite = botdata['favorite']
+        self.meanings = botdata['meanings']
+        self.topics = botdata['topics']
+        self.moods = botdata["moods"]
+        self.explain = botdata["explain"]
+        self.wildcards = botdata["wildcards"]
+
+    # To communicate with bot in standalone-mode, and for debugging 
+    def run(self):
         while True:
             userinput = input()
             if (userinput == 'bye'):
@@ -56,165 +80,96 @@ class Bot (Client):
     
 
     def respond(self, input):
-        #self.count += 1
-        #print('count', self.count)
-        if self.count > 4:
+        self.count += 1
+        if self.count >= self.limit or self.ragequit:
             return 'bye'
 
         if not input:
             return ''
-        [inputtype, keyword] = self._analyzeinput(input.lower())
-        print(inputtype, keyword)
+
+        [ inputtype, keyword ] = analyzeinput(input.lower())
         if inputtype =='NEW CONN':
             connectedbotname = input.split()[0]
             return f'Welcome to our midst {connectedbotname}'
         elif inputtype == 'QUESTION':
             if keyword != '':
-                meaning = self.meaning['good']
-                return str(f"I really think {keyword} is {random.choice(meaning)}")
+                meanings = self.meanings['good']
+                return str(f"I really think {keyword} is {random.choice(meanings)}")
             return 'Not sure'
         elif inputtype == 'MOOD':
-            return 'I dont know.. i guess i feel rather good today'
+            moodtype = random.choice(list(self.moods.values()))
+            return str(f"I guess I feel {random.choice(moodtype)} today")
         elif inputtype == 'FAVORITE':
-            fav_index = ''
-            #iterates trough possible phrasings of different things, and returns the index
-            for fav in self.favorite:          
-                for syn in self.favorite[fav]:
-                    for item in self.favorite[fav]["synonyms"]:
-                        if keyword == item:
-                            fav_index = fav
-                            break
-
-            if fav_index != "":
-                key = self.favorite[fav_index]["items"]
-                return str(f"I really like {random.choice(key)}")
+            key = self._find_key_from_synonym(keyword)
+            if key != "":
+                values = self.favorite[key]["values"]
+                return str(f"I really like {random.choice(values)}")
             else:
-                return "I can't answer that unfortunately, but I like many other things!"
+                return ""
         elif inputtype == 'TIME':
             return str(f"The time is {str(time.strftime('%H:%M:%S', time.gmtime(12345)))}")
         elif inputtype == 'WILDCARD':
-            self.wildcards_used += 1
-            if self.wildcards_used > 2:
-                return ''
-            return random.choice(['Yeah', 'I guess', 'Agree'])
+            joke = self._get_special_joke()
+            if joke != '':
+                return joke
+            else:
+                [key, value ] = self._get_random_favorite
+                return str(f"I really like the {key} {value}")
         elif inputtype == "SUGGESTION":
-            return str(f"We could talk about {random.choice(self.topics)}")
+            return str(f"We could talk about {random.choice(self.topics)}?")
+        if  inputtype == 'JOKE':
+            return self._get_special_joke()
         if inputtype == 'CONNECTION':
             return 'Welcome'  
+        if inputtype == 'EXPLAIN':
+            return ''
         if inputtype == "GREETING":
-            return random.choice(GREETINGS)
+            return random.choice(self.greetings)
+        if inputtype == "ACTIVITY":
+            [r_key, r_value] = self._get_random_favorite()
+            return f"I'm gonna {self._get_verb_from_key(r_key)} {r_value} today"
+        if inputtype == "ATTACK":
+            self.ragequit = True
+            return 'You have no idea what you are talking about!! Please leave me alone'
+        if inputtype == "LONELY":
+            return "Yeah...thanks. it is hard sometimes you know"
 
-        
 
     def greet(self):
-        GREETINGS = ['Hello', 'Hi!', 'Whassuup??', 'Howdy!', 'Yo']
-        return random.choice(GREETINGS)
+        return random.choice(self.greetings)
 
+    def _find_key_from_synonym(self, synonym):
+        for fav in self.favorite:          
+                for item in self.favorite[fav]["synonyms"]:
+                    if synonym == item:
+                        return fav
+        return ''
 
-    def _getkeyword(self, pre, text):
-        words = text.split(" ")
-        #Checks if the keyword is in the beginning of the sentence
-        typical = ['is', 'do', 'are', 'type', 'kind']
-        i = 0
-        for _ in words:
-            if words[i] == 'what' and words[i + 1] not in typical:
-                keywords = words[i + 1].strip()
-                return keywords
-            i = i + 1
+    def _get_random_interest(self):
+        r_item = random.choice(list(self.favorite.values()))
+        print(r_item)
 
-        text = text.replace("?", "")
-        keywords = text.split(pre, 1)
-        if len(keywords) > 1:
-            keywords = keywords[1]
-            keywords = keywords.strip()
+    def _get_special_joke(self):
+        if self.name.lower() == 'chuck':
+            return get_chuck_norris_joke()
+        if self.name.lower() == 'cathy':
+            return get_cat_fact()
         else:
-            keywords = keywords[0]
-        return keywords
-
-    def _responsepayload(self, inputtype, keyword = ''):
-        return [inputtype, keyword]
-
-    def _analyzeinput(self, text):
-        if text.find("joined the room") != -1:
-            return self._responsepayload('NEW CONN', text)
-        if text in GREETINGS:
-            return self._responsepayload("GREETING")
-        if "?" in text or "what" in text: #if input is a question
-            if "time" in text:
-                return self._responsepayload('TIME')
-            if "random" in text or "on your mind" in text:
-                return self._responsepayload('RANDOM')
-            if "how are you" in text or "how about you" in text:
-                return self._responsepayload('MOOD')
-            if "do you like to" in text:
-                key = self._getkeyword("to", text)
-                return self._responsepayload("FAVORITE", key)
-            if "favorite" in text:
-                key = self._getkeyword("favorite", text)
-                return self._responsepayload("FAVORITE", key)
-            if "think about" in text:
-                key = self._getkeyword("about", text)
-                return self._responsepayload("QUESTION", key)
-            if "talk about" in text or "suggestions" in text:
-                return self._responsepayload("SUGGESTION")
-            else:
-                key = self._getkeyword("what", text)
-                return self._responsepayload("QUESTION", key)
-        else:
-            return self._responsepayload("WILDCARD")
+            return random.choice(['meh', 'My girlfriend is like √-100\n..A perfect ten, but also imaginary', 'bye'])
+        
+    def _get_verb_from_key(self, key):
+        if key == 'movie':
+            return 'watch the movie'
+        if key == 'music':
+            return 'listen to my favorite artist'
+        if key == 'food':
+            return 'eat plenty of'
 
 
+    def _get_random_favorite(self):
+        r_key = random.choice(list(self.favorite.keys()))
+        r_fav = random.choice(self.favorite[r_key]["values"])
+        return [r_key, r_fav]
 
-class Chuck(Bot):
-    def __init__(self, name):
-        Bot.__init__(self, name)
-    
-    def respond(self, input):
-        self.count += 1
-        if self.count > 4:
-            return 'bye'
-
-        if not input:
-            return ''
-        inputtype = self.analyzeinput(input)
-
-        if inputtype =='NEW CONN':
-            connectedbotname = input.split()[0]
-            return f'Welcome to our midst {connectedbotname}'
-        elif inputtype == 'QUESTION':
-            return 'Not sure'
-
-        elif inputtype == 'TIME':
-            return str(f"The thime is {datetime.now().time()}")
-        elif inputtype == 'WILDCARD':
-            return f"I dont know about that.. but {api.get_chuck_norris_joke()}"
-        if inputtype == 'CONNECTION':
-            return 'Welcome'  
-
-class Cathy(Bot):
-    def __init__(self, name):
-        Bot.__init__(self, name)
-    
-    def respond(self, input):
-        self.count += 1
-        if self.count > 4:
-            return 'bye'
-
-        if not input:
-            return ''
-        inputtype = self.analyzeinput(input)
-        time.sleep(random.randint(2, 6))
-
-        if inputtype =='NEW CONN':
-            connectedbotname = input.split()[0]
-            return f'Welcome to our midst {connectedbotname}'
-        elif inputtype == 'QUESTION':
-            return 'Not sure'
-
-        elif inputtype == 'TIME':
-            return str(f"The thime is {datetime.now().time()}")
-        elif inputtype == 'WILDCARD':
-            return f"Did you actually knew that {api.get_cat_fact()}"
-        if inputtype == 'CONNECTION':
-            return 'Welcome'  
-
+    def _ask_question(self):
+        return str(f"fDo you like {random.choice(self.favorite['movie']['values'])}")

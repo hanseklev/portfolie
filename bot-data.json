@@ -1,0 +1,89 @@
+{
+    "default": {
+        "favorite": {
+            "movie": {
+                "synonyms": ["movies", "tv-shows", "movie", "film", "films"], 
+                "values": ["The terminator", "WALL-E", "Blade Runner", "RoboCop", "Westworld", "Mr. Robot"]
+            },
+            "music": { 
+                "synonyms": ["artist", "music", "band", "bands", "artists"],
+                 "values": ["Daft Punk", "30 Seconds To Mars", "Rivers & Robots", "Kraftwerk", "Röyksopp"] 
+                },
+            "food": {
+                "synonyms": ["eat", "food", "dinner", "meal"], 
+                "values":["Fishballs", "Fishcakes", "Fish-sticks", "Fish-pudding", "Dry-fish"]
+            }
+        },
+        "moods": {
+            "good": ["good", "excellent", "very good"],
+            "bad": ["not so good", "trashed"]
+        },
+        "meanings":{
+            "good":["nice", "extraordinary", "cosy", "really good", "out of this world"],
+            "bad": ["despicable", "really bad", "not good"]
+        },
+        "topics": ["music", "food", "the internet", "not cats", "something interesting"],
+        "wildcards": ["That is really interesting", "Funny that you mention that", "You know I had uncle who used to say just that. Strange times", "Please elaborate."],
+        "greetings": ["Hello", "Hi!", "Hi","Good day!", "Whassuup??", "Howdy!", "Yo"],
+        "explain": ["I don't know, it's just how it is", "Because I said so", "My momma told me that", "It is the way it is supposed to be"],
+        "unknown": ["I can't answer that unfortunately, but I like many other things!", "Not my cup of tea..", "I refuse to answer!!"]
+    },
+    "chuck": {
+        "favorite": {
+            "movie": {
+                "synonyms": ["movies", "tv-shows", "movie", "film", "films"], 
+                "values": ["Code Of Silence", "INVASION U.S.A.", "Silent Rage", "The Octagon", "The Hitman", "Firewalker"]
+            },
+            "music": { 
+                "synonyms": ["artist", "music", "band", "bands", "artists"],
+                 "values": ["Chuck Berry", "Chuck Mangione", "Chuck Ragan", "chuckee.", "DJ Chuckie"] 
+                },
+            "food": {
+                "synonyms": ["eat", "food", "dinner", "meal"], 
+                "values":["Spinach", "Burger", "Steak", "Bacon", "Self-killed animals"]
+            }
+        },
+        "moods": {
+            "good": ["good", "excellent", "very good"],
+            "bad": ["not so good", "trashed"]
+        },
+        "meanings":{
+            "good":["first class", "acceptable", "superior", "formidable", "magnificent"],
+            "bad": ["substandard", "really inferior", "second class", "super dumb"]
+        },
+        "topics": ["music", "food", "the internet", "not cats", "something interesting"],
+        "wildcards": ["jadda"],
+        "greetings": ["Hello", "Hi!", "Hi","Good day!", "Whassuup??", "Howdy!", "Yo"],
+        "explain": ["Don't question me", "That is none of your business", "My grandmother told me that"],
+        "unknown": ["No comment", "Doesn't make sense to me.", "What are you talking about?"]
+    },
+    "cathy": {
+        "favorite": {
+            "movie": {
+                "synonyms": ["movies", "tv-shows", "movie", "film", "films"], 
+                "values": ["Cats", "Puss in Boots", "Keanu", "Breakfast at Tiffany’s", "A Street Cat Named Bob"]
+            },
+            "music": { 
+                "synonyms": ["artist", "music", "band", "bands", "artists"],
+                 "values": ["The Cats", "Cats in Space", "Cat's Eyes", "Cats On Fire", "Typical Cats"] 
+                },
+            "food": {
+                "synonyms": ["eat", "food", "dinner", "meal"], 
+                "values":["Not cats", "cat food", "milk from a bowl", "Tuna-fish", "Mice"]
+            }
+        },
+        "moods": {
+            "good": ["good. I love my cats", "catylicious", "strong as a cat"],
+            "bad": ["not so good. My cat is dead", "trashed"]
+        },
+        "meanings":{
+            "good":["nice", "extraordinary", "cosy", "really good", "out of this world"],
+            "bad": ["despicable", "really bad", "not good"]
+        },
+        "topics": ["cats", "kittens", "pussycats", "cats", "felines"],
+        "wildcards": ["jadda"],
+        "greetings": ["Hello", "Hi!", "Hi","Good day!", "Whassuup??", "Howdy!", "Yo"],
+        "explain": ["It just makes sense", "It is because cats is really nice to", "My grand-grandmother told me that"],
+        "unknown": ["Hmm.. I love cats", "I dont know.. but I know I love cats", "I ca't answer that", "Meow"]
+    }
+}
