@@ -64,7 +64,7 @@ def getCommandLineArguments(isclient = False):
         print('You have to provide a ip-address using the argument -ip [ADDRESS] or --ipaddress [ADDRESS]')
         exit(2)
     if (isclient and botname == None):
-        print('You have to assign a bot using the argument -b [NAME] or --bot [NAME]')
+        print('You have to assign a username using the argument -b [NAME] or --bot [NAME]')
         exit(2)
 
     port = int(port)
@@ -84,8 +84,12 @@ def _getkeyword(pre, text):
                 keywords = words[i + 1].strip()
                 return keywords
             i = i + 1
-        #assumes else it is the last word in the sentence and extracts it
+
         text = text.replace("?", "")
+        if pre == '':
+            return words[-1]
+
+        #assumes else it is the last word in the sentence and extracts it
         keywords = text.split(pre, 1)
         if len(keywords) > 1:
             keywords = keywords[1]
@@ -101,10 +105,6 @@ def _responsepayload(inputtype, keyword = ''):
 def analyzeinput(text):
     if text.find("joined the room") != -1:
         return _responsepayload('NEW CONN', text)
-    if any(word.lower() in text for word in GREET_WORDS):
-        return _responsepayload("GREETING")
-    if  any(word.lower() in text for word in JOKE_WORDS) and "tell" in text:
-        return _responsepayload("JOKE")
     if "?" in text or "what" in text:
         if "time" in text:
             return _responsepayload('TIME')
@@ -112,11 +112,13 @@ def analyzeinput(text):
             return _responsepayload('RANDOM')
         if "how are you" in text or "how about you" in text:
             return _responsepayload('MOOD')
-        if "do you like to" in text:
-            key = _getkeyword("to", text)
-            return _responsepayload("FAVORITE", key)
         if "favorite" in text:
             key = _getkeyword("favorite", text)
+            return _responsepayload("FAVORITE", key)
+        if "what do you like" in text:
+            return _responsepayload("FAVORITE")
+        if "do you like" in text:
+            key = _getkeyword("like", text)
             return _responsepayload("FAVORITE", key)
         if "think about" in text:
             key = _getkeyword("about", text)
@@ -124,16 +126,21 @@ def analyzeinput(text):
         if "talk about" in text or "suggestions" in text:
             key = _getkeyword("about", text)
             return _responsepayload("SUGGESTION", key)
-        if "up to" in text or "plans for the day" in text:
-            return _responsepayload("ACTIVITY")
+        if "up to" in text or "plans for the day" in text or "wants to":
+            key = _getkeyword("", text)
+            return _responsepayload("ACTIVITY", key)
         if "why" in text:
             return _responsepayload("EXPLAIN")
-        if "not make sense" in text or "doesn't makes sense" in text or "you don't make sense" in text:
-            return _responsepayload("ATTACK")
-        if "lonely" in text:
-            return _responsepayload("LONELY")
         else:
             key = _getkeyword("what", text)
             return _responsepayload("QUESTION", key)
+    if "not make sense" in text or "doesn't makes sense" in text or "you don't make sense" in text or "dont make sense" in text:
+        return _responsepayload("ATTACK")
+    if "lonely" in text:
+        return _responsepayload("LONELY")
+    if  any(word.lower() in text for word in JOKE_WORDS) and "tell" in text:
+        return _responsepayload("JOKE")
+    if any(word.lower() in text for word in GREET_WORDS):
+        return _responsepayload("GREETING")
     else:
         return _responsepayload("WILDCARD")

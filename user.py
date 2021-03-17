@@ -88,33 +88,44 @@ class Bot (User):
             return ''
 
         [ inputtype, keyword ] = analyzeinput(input.lower())
+        print(inputtype, keyword)
+
         if inputtype =='NEW CONN':
             connectedbotname = input.split()[0]
             return f'Welcome to our midst {connectedbotname}'
         elif inputtype == 'QUESTION':
             if keyword != '':
-                meanings = self.meanings['good']
-                return str(f"I really think {keyword} is {random.choice(meanings)}")
+                meanings = self.meanings[random.choice(['good', 'bad'])]
+                return str(f"I think {keyword} is {random.choice(meanings)}")
             return 'Not sure'
         elif inputtype == 'MOOD':
             moodtype = random.choice(list(self.moods.values()))
-            return str(f"I guess I feel {random.choice(moodtype)} today")
+            return str(f"I feel {random.choice(moodtype)} today")
         elif inputtype == 'FAVORITE':
-            key = self._find_key_from_synonym(keyword)
-            if key != "":
-                values = self.favorite[key]["values"]
-                return str(f"I really like {random.choice(values)}")
+            if keyword == '':
+                [key, _] = self._get_random_favorite()
+                return str(f"I really like {random.choice()}") 
             else:
-                return ""
+                key = self._find_key_from_synonym(keyword)
+                if key != "":
+                    values = self.favorite[key]["values"]
+                    return str(f"I really like {random.choice(values)}")
+                else:
+                    return ""
         elif inputtype == 'TIME':
-            return str(f"The time is {str(time.strftime('%H:%M:%S', time.gmtime(12345)))}")
+            [r_key, r_value] = self._get_random_favorite()
+            return str(f"The time is {str(time.strftime('%H:%M:%S', time.gmtime(12345)))}. It is time to {self._get_verb_from_key(r_key)} {r_value}")
         elif inputtype == 'WILDCARD':
-            joke = self._get_special_joke()
-            if joke != '':
-                return joke
+            self.wildcards_used += 1
+            if self.wildcards_used  % 2 == 0:
+                joke = self._get_special_joke()
+                if joke != '':
+                    return joke
+                else:
+                    [key, value ] = self._get_random_favorite
+                    return str(f"I really like the {key} {value}")
             else:
-                [key, value ] = self._get_random_favorite
-                return str(f"I really like the {key} {value}")
+                return random.choice(self.wildcards)
         elif inputtype == "SUGGESTION":
             return str(f"We could talk about {random.choice(self.topics)}?")
         if  inputtype == 'JOKE':
@@ -122,7 +133,7 @@ class Bot (User):
         if inputtype == 'CONNECTION':
             return 'Welcome'  
         if inputtype == 'EXPLAIN':
-            return ''
+            return random.choice(self.explain)
         if inputtype == "GREETING":
             return random.choice(self.greetings)
         if inputtype == "ACTIVITY":
@@ -144,10 +155,6 @@ class Bot (User):
                     if synonym == item:
                         return fav
         return ''
-
-    def _get_random_interest(self):
-        r_item = random.choice(list(self.favorite.values()))
-        print(r_item)
 
     def _get_special_joke(self):
         if self.name.lower() == 'chuck':

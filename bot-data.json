@@ -23,10 +23,18 @@
             "bad": ["despicable", "really bad", "not good"]
         },
         "topics": ["music", "food", "the internet", "not cats", "something interesting"],
-        "wildcards": ["That is really interesting", "Funny that you mention that", "You know I had uncle who used to say just that. Strange times", "Please elaborate."],
+        "wildcards": [
+            "That is really interesting", 
+            "Funny that you mention that", 
+            "You know I had uncle who used to say just that. Strange times",
+            "Please elaborate.", 
+            "Why?", 
+            "I can't answer that unfortunately, but I like many other things!",
+            "Not my cup of tea..",
+            "I refuse to answer!!"
+            ],
         "greetings": ["Hello", "Hi!", "Hi","Good day!", "Whassuup??", "Howdy!", "Yo"],
-        "explain": ["I don't know, it's just how it is", "Because I said so", "My momma told me that", "It is the way it is supposed to be"],
-        "unknown": ["I can't answer that unfortunately, but I like many other things!", "Not my cup of tea..", "I refuse to answer!!"]
+        "explain": ["I don't know, it's just how it is", "Because I said so", "My momma told me that", "It is the way it is supposed to be",  "That doesn't make sense", "You don't make sense"]
     },
     "chuck": {
         "favorite": {
@@ -52,10 +60,9 @@
             "bad": ["substandard", "really inferior", "second class", "super dumb"]
         },
         "topics": ["music", "food", "the internet", "not cats", "something interesting"],
-        "wildcards": ["jadda"],
+        "wildcards": ["No comment", "Doesn't make sense to me.", "What are you talking about?"],
         "greetings": ["Hello", "Hi!", "Hi","Good day!", "Whassuup??", "Howdy!", "Yo"],
-        "explain": ["Don't question me", "That is none of your business", "My grandmother told me that"],
-        "unknown": ["No comment", "Doesn't make sense to me.", "What are you talking about?"]
+        "explain": ["Don't question me", "That is none of your business", "My grandmother told me that", "That doesn't make sense", "You don't make sense"]
     },
     "cathy": {
         "favorite": {
@@ -81,9 +88,8 @@
             "bad": ["despicable", "really bad", "not good"]
         },
         "topics": ["cats", "kittens", "pussycats", "cats", "felines"],
-        "wildcards": ["jadda"],
+        "wildcards": ["jadda", "Why?", "You don't make sense","Hmm.. I love cats", "I dont know.. but I know I love cats", "I ca't answer that", "Meow" ],
         "greetings": ["Hello", "Hi!", "Hi","Good day!", "Whassuup??", "Howdy!", "Yo"],
-        "explain": ["It just makes sense", "It is because cats is really nice to", "My grand-grandmother told me that"],
-        "unknown": ["Hmm.. I love cats", "I dont know.. but I know I love cats", "I ca't answer that", "Meow"]
+        "explain": ["It just makes sense", "It is because cats is really nice to", "My grand-grandmother told me that"]
     }
 }

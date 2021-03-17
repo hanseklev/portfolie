@@ -24,6 +24,9 @@ try:
 except socket.error as e:
     print(f'{colors.FAIL}Unable to connect..either the server is not running, or you have wrong port/IP' + colors.ENDC)
     quit()
+else:
+    print(colors.WARNING + f"\n******* WELCOME {USERNAME} THE BOTINATOR 2000 *******\n" + colors.ENDC)
+
 
 def formatname(msg):
     text = str(msg)
@@ -66,7 +69,7 @@ while isrunning:
             try:
                 data = s.recv(1024)
             except ConnectionResetError:
-                print(colors.FAIL+"Something bad happen, try to reconnect"+colors.ENDC)
+                print(colors.FAIL+"Something bad happened, try to reconnect"+colors.ENDC)
                 isrunning = False
                 break
             if not data:
@@ -105,7 +108,6 @@ while isrunning:
         else:
             client.send(response.encode()) 
 
-client.recv(1024)
 client.close()
 print('Closing app..')
 quit() 
